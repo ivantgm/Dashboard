@@ -1,0 +1,1 @@
+g++ AppDashboard.cpp ClassLogin.cpp ClassSQLite.cpp FrameCupom.cpp FrameDashboard.cpp FrameLogin.cpp FrameSincronizar.cpp FrameTerminalSQL.cpp PanelBarChart.cpp PanelPieChart.cpp `wx-config --cxxflags --libs std,stc` -lsqlite3 -oDashboard
