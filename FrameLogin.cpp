@@ -4,54 +4,68 @@
 FrameLogin::FrameLogin() : wxDialog(nullptr, wxID_ANY, "Login - Dashboard", wxDefaultPosition, wxDefaultSize) {
     Center();
     
-    ok = false;    
+    m_ok = false;    
 
-    // Painel principal para fundo correto em todos os S.O.
-    wxPanel* panel = new wxPanel(this, wxID_ANY);
+    auto* mainSizer = new wxBoxSizer(wxVERTICAL);
 
-    // Sizers para organização visual (Layout Responsivo)
-    wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
-    wxFlexGridSizer* gridSizer = new wxFlexGridSizer(2, 2, 10, 10);
+    auto* m_panelTop = new wxPanel(this);
+    auto* topSizer = new wxBoxSizer(wxVERTICAL);
 
-    // Componentes de texto e entrada
-    wxStaticText* lblUsuario = new wxStaticText(panel, wxID_ANY, L"Usuário:");
-    txtUsuario = new wxTextCtrl(panel, wxID_ANY, "");
+    auto* linha1 = new wxBoxSizer(wxHORIZONTAL);
+    m_txtUsuario = CriarCampo(
+        m_panelTop,
+        linha1,
+        L"Usuário",
+        1
+    );
+    topSizer->Add(
+        linha1,
+        0,
+        wxEXPAND | wxALL,
+        1
+    );
 
-    wxStaticText* lblSenha = new wxStaticText(panel, wxID_ANY, L"Senha:");
-    txtSenha = new wxTextCtrl(panel, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxTE_PASSWORD);
+    auto* linha2 = new wxBoxSizer(wxHORIZONTAL);
+    m_txtSenha = CriarCampo(
+        m_panelTop,
+        linha2,
+        L"Senha",
+        1,
+        true
+    );
+    topSizer->Add(
+        linha2,
+        0,
+        wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM,
+        1
+    );
 
-    // Adiciona componentes ao grid (2 colunas)
-    gridSizer->Add(lblUsuario, 0, wxALIGN_CENTER_VERTICAL);
-    gridSizer->Add(txtUsuario, 1, wxEXPAND);
-    gridSizer->Add(lblSenha, 0, wxALIGN_CENTER_VERTICAL);
-    gridSizer->Add(txtSenha, 1, wxEXPAND);
 
-    // Permite que a coluna do campo de texto cresça horizontalmente
-    gridSizer->AddGrowableCol(1, 1);
+
 
     // Botão de envio
-    wxButton* btnLogin = new wxButton(panel, wxID_ANY, L"Entrar");
+    wxButton* btnLogin = new wxButton(m_panelTop, wxID_ANY, L"Entrar");
 
     // Organização das margens no Sizer Principal
-    mainSizer->Add(gridSizer, 1, wxALL | wxEXPAND, 20);
+    mainSizer->Add(topSizer, 1, wxALL | wxEXPAND, 20);
     mainSizer->Add(btnLogin, 0, wxALIGN_CENTER | wxBOTTOM, 20);
 
-    panel->SetSizer(mainSizer);
+    m_panelTop->SetSizer(mainSizer);
 
     // Evento do botão
     btnLogin->Bind(wxEVT_BUTTON, &FrameLogin::OnLogin, this);
 
-    this->Fit();
+    this->SetMinSize(wxSize(400, 350));
 }
 
 void FrameLogin::OnLogin(wxCommandEvent& event) {
-    wxString usuario = txtUsuario->GetValue();
-    wxString senha = txtSenha->GetValue();
+    wxString usuario = m_txtUsuario->GetValue();
+    wxString senha = m_txtSenha->GetValue();
 
     ClassLogin login(false);
 
     if (login.Login(usuario, senha)) {
-        ok = true;
+        m_ok = true;
         Close();       
     }
     else {
@@ -60,6 +74,52 @@ void FrameLogin::OnLogin(wxCommandEvent& event) {
 }
 
 bool FrameLogin::Ok(void) const {
-    return ok;
+    return m_ok;
 }
 
+wxTextCtrl* FrameLogin::CriarCampo(
+    wxWindow* parent,
+    wxBoxSizer* sizer,
+    const wxString& rotulo,
+    int proportion,
+    bool password)
+{
+    auto* campoSizer = new wxBoxSizer(wxVERTICAL);
+
+    auto* label = new wxStaticText(
+        parent,
+        wxID_ANY,
+        rotulo
+    );
+
+    auto* campo = new wxTextCtrl(
+        parent,
+        wxID_ANY,
+        "", 
+        wxDefaultPosition, 
+        wxDefaultSize, 
+        password ? wxTE_PASSWORD : 0L
+    );
+
+    campoSizer->Add(
+        label,
+        0,
+        wxBOTTOM,
+        2
+    );
+
+    campoSizer->Add(
+        campo,
+        0,
+        wxEXPAND
+    );
+
+    sizer->Add(
+        campoSizer,
+        proportion,
+        wxEXPAND | wxLEFT | wxRIGHT,
+        4
+    );
+
+    return campo;
+}
