@@ -1,12 +1,17 @@
 ﻿#include "ClassSQLite.h"
+#include "ClassLogin.h"
 #include <exception>
 #include <stdexcept>
-
 
 ClassSQLite::ClassSQLite(void)
 {    
     erro = "";
-    if (sqlite3_open("banco.db", &db) != SQLITE_OK) {
+    ClassLogin login(true);
+    std::hash<wxString> gerador_hash;
+    std::size_t valor_hash = gerador_hash(login.Usuario());
+    std::string file_name = std::to_string(valor_hash) + ".db";
+
+    if (sqlite3_open(file_name.c_str(), &db) != SQLITE_OK) {
         erro = wxString::Format("Erro ao abrir banco de dados SQLite: %s!", sqlite3_errmsg(db));
     }
     CriarBanco();
