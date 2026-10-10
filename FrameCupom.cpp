@@ -1,4 +1,6 @@
 ﻿#include "FrameCupom.h"
+#include <wx/artprov.h>
+#include <wx/clipbrd.h>
 
 FrameCupom::FrameCupom(wxWindow* parent, ClassSQLite* sqlite, int id_cupom)
     : wxFrame(parent, wxID_ANY, "Cupom")
@@ -87,6 +89,20 @@ FrameCupom::FrameCupom(wxWindow* parent, ClassSQLite* sqlite, int id_cupom)
         L"URL",
         1
     );
+
+    auto copyIcon = wxArtProvider::GetBitmap(wxART_COPY, wxART_BUTTON, wxSize(16, 16));
+    auto copyButton = new wxButton(m_panelTop, wxID_ANY, "Copiar URL");
+    copyButton->SetBitmap(copyIcon);
+    copyButton->SetBitmapPosition(wxLEFT);
+    copyButton->Bind(wxEVT_BUTTON, &FrameCupom::OnCopyURL, this);
+    linha2->Add(copyButton, 0, wxALIGN_BOTTOM, 0);
+
+    auto saveIcon = wxArtProvider::GetBitmap(wxART_FILE_SAVE, wxART_BUTTON, wxSize(16, 16));
+    auto saveButton = new wxButton(m_panelTop, wxID_ANY, "Salvar TXT");
+    saveButton->SetBitmap(saveIcon);
+    saveButton->SetBitmapPosition(wxLEFT);
+    saveButton->Bind(wxEVT_BUTTON, &FrameCupom::OnSalvarTXT, this);
+    linha2->Add(saveButton, 0, wxALIGN_BOTTOM, 0);
 
     topSizer->Add(
         linha2,
@@ -277,4 +293,17 @@ wxTextCtrl* FrameCupom::CriarCampo(
     );
 
     return campo;
+}
+
+void FrameCupom::OnCopyURL(wxCommandEvent& event)
+{
+    if (wxTheClipboard->Open()) {
+        wxTheClipboard->SetData(new wxTextDataObject(m_txtUrl->GetValue()));
+        wxTheClipboard->Close();
+    }
+}
+
+void FrameCupom::OnSalvarTXT(wxCommandEvent& event)
+{
+
 }

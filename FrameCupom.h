@@ -35,4 +35,7 @@ private:
     wxStaticText* CriarRotulo(wxWindow* parent,
         wxBoxSizer* sizer,
         const wxString& texto);
+private:
+    void OnCopyURL(wxCommandEvent& event);
+    void OnSalvarTXT(wxCommandEvent& event);
 };
