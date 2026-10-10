@@ -1,6 +1,13 @@
 # Prerequisites
 *.d
 
+# sqlite files
+*.db
+
+# Compiled Executable files
+*.exe
+Dashboard
+
 # Compiled Object files
 *.slo
 *.lo
