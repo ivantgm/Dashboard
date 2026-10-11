@@ -38,4 +38,8 @@ private:
 private:
     void OnCopyURL(wxCommandEvent& event);
     void OnSalvarTXT(wxCommandEvent& event);
+    wxString GridToPrettyTable(wxGrid* grid, 
+        bool includeHeaders, 
+        std::vector<int> right_cols,
+        std::vector<int> sum_cols);
 };

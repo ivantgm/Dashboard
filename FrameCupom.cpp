@@ -304,6 +304,161 @@ void FrameCupom::OnCopyURL(wxCommandEvent& event)
 }
 
 void FrameCupom::OnSalvarTXT(wxCommandEvent& event)
-{
+{    
+    auto right_cols = std::vector<int>{ 0, 3, 5, 6, 7, 8 };
+    auto sum_cols = std::vector<int>{ 6, 7, 8 };
+    const wxString text = GridToPrettyTable(m_grid, true, right_cols, sum_cols);
+    if (!text.IsEmpty()) {
+        if (wxTheClipboard->Open()) {
+            wxTheClipboard->SetData(new wxTextDataObject(text));
+            wxTheClipboard->Close();
+        }
+    }
+}
 
+wxString FrameCupom::GridToPrettyTable(wxGrid* grid, bool includeHeaders, std::vector<int> right_cols, std::vector<int> sum_cols)
+{
+    if (!grid)
+        return wxEmptyString;
+
+    const int rows = grid->GetNumberRows();
+    const int cols = grid->GetNumberCols();
+
+    if (cols == 0)
+        return wxEmptyString;
+
+    bool is_multi_select = false;
+    for (int row = 0; row < rows; ++row) {
+        if (grid->IsInSelection(row, 0)) {
+            is_multi_select = true;
+            break;
+        }
+    }
+
+    // Calcula a largura de cada coluna.
+    std::vector<int> widths(cols, 0);
+    std::map<int, double> sum;
+
+    for (int col = 0; col < cols; ++col)
+    {
+        if (includeHeaders)
+            widths[col] = grid->GetColLabelValue(col).Length();
+
+        bool sum_col = std::find(sum_cols.begin(), sum_cols.end(), col) != sum_cols.end();
+
+        for (int row = 0; row < rows; ++row)
+        {            
+            if (is_multi_select && (!grid->IsInSelection(row, 0))) continue;
+
+            const wxString cell_value = grid->GetCellValue(row, col);
+            const int len = cell_value.Length();
+
+            if (len > widths[col])
+                widths[col] = len;
+
+            if (sum_col) {
+                double d;
+                if (cell_value.ToDouble(&d)) {
+                    sum[col] += d;
+                }                
+            }
+
+        }
+        for (auto col : sum_cols) {
+            auto value = wxString::Format("%.2f", sum[col]);
+            const int len = value.Length();
+            if (len > widths[col])
+                widths[col] = len;
+        }
+    }
+
+    // Monta uma linha separadora.
+    auto separator = [&]() -> wxString
+        {
+            wxString line = "+";
+
+            for (int col = 0; col < cols; ++col)
+            {
+                line += wxString('-', widths[col] + 2);
+                line += "+";
+            }
+
+            return line;
+        };
+
+    // Monta uma linha com os valores das células.
+    auto makeRow = [&](const std::vector<wxString>& values) -> wxString
+        {
+            wxString line = "|";
+
+            for (int col = 0; col < cols; ++col)
+            {
+                wxString value = values[col];
+
+                if (std::find(right_cols.begin(), right_cols.end(), col) != right_cols.end()) {
+                    value = wxString(' ', widths[col] - value.Length()) + value;
+                }
+                else {
+                    value += wxString(' ', widths[col] - value.Length());
+                }                
+
+                line += " " + value + " |";
+            }
+
+            return line;
+        };
+
+    wxString result;
+    const wxString sep = separator();
+
+    result += sep + "\n";
+
+    // Cabeçalho.
+    if (includeHeaders)
+    {
+        std::vector<wxString> headers;
+        headers.reserve(cols);
+
+        for (int col = 0; col < cols; ++col)
+            headers.push_back(grid->GetColLabelValue(col));
+
+        result += makeRow(headers) + "\n";
+        result += sep + "\n";
+    }
+
+    // Dados.
+    for (int row = 0; row < rows; ++row)
+    {
+        if (is_multi_select && (!grid->IsInSelection(row, 0))) continue;
+
+        std::vector<wxString> values;
+        values.reserve(cols);
+
+        for (int col = 0; col < cols; ++col)
+            values.push_back(grid->GetCellValue(row, col));
+
+        result += makeRow(values) + "\n";
+    }
+
+    result += sep;
+
+    if (!sum_cols.empty()) {
+        std::vector<wxString> values;
+        values.reserve(cols);
+
+        for (int col = 0; col < cols; ++col) {
+            bool sum_col = std::find(sum_cols.begin(), sum_cols.end(), col) != sum_cols.end();
+            if (sum_col) {
+                values.push_back(wxString::Format("%.2f", sum[col]));
+            }
+            else {
+                values.push_back("");
+            }
+
+        }
+        result += "\n" + makeRow(values) + "\n";
+        result += sep;
+    }
+
+    return result;
 }
